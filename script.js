@@ -12,8 +12,40 @@ $(document).ready(function(){
         var dateText = data.query.results.div.content;
         dateText = "\nIt is Thursday 11th December 2016, which is Semester 1 Week 11 and is an 'odd' week.";
         $("#top").html("<p>" + dateText + "</p>");
+        var datas = [];
+        $.each(data.query.results.tr, function (index, value) {
+            if(index>0){
+                $.each(value.td, function (i, v){
+                    if(i>0){
+                        if(v.div){
+                            if(v.div.length == 2){
+                                var myData = new MultiData(index,i);
+                                $.each(v.div, function (ind, val) {
+                                    myData.addText(val);
+                                });
+                                datas.push(myData);
+                            }else{
+                                datas.push(new Data(v.div,index,i))
+                            }
+                        }else{
+                            datas.push(new Data(v.content,index,i))
+                        }
+                    }
+                });
+            }
+        });
+
+        $.each(datas,function(index,value){
+            console.log("Each index: " + index);
+            console.log("datas day: " + value.day);
+            console.log("datas hour: " + value.hour);
+            console.log("datas text: " + value.text);
+        });
         //alert(data.query.results.tr);
-        $("#top").append("<table>");
+        /**
+         * ############################################
+         */
+        /*$("#top").append("<table>");
         $("#top").append("</table>");
         var weekString = dateText.substr(dateText.indexOf("Week")+5,2);
         $.each(data.query.results.tr, function (index, value) {
@@ -78,7 +110,7 @@ $(document).ready(function(){
             case "Fri":
                 $("#row-5").addClass("day");
         }
-        // alert(weekString);
+        // alert(weekString);*/
     });
 });
 
@@ -97,16 +129,19 @@ function parseNumRange(range, hit){
     }
 }
 
-function Row(day){
+function Data(text,day,hour){
+    this.text = text;
     this.day = day;
-    this.isToday = false;
-}
-
-function Data(text){
-    this.text = text;
+    this.hour = hour;
     this.isNow = false;
 }
-function MultiData(text){
-    this.text = text;
+function MultiData(day,hour){
+    this.text = "MultiData";
+    this.texts = new Array();
+    this.day = day;
+    this.hour = hour;
     this.isNow = false;
+    this.addText = function(newText){
+        this.texts.push(newText);
+    };
 }
