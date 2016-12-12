@@ -2,7 +2,9 @@
  * Created by kyle on 06/12/16.
  */
 $(document).ready(function(){
-    var weekText;
+    var showIndex;
+    var dayLetters;
+    var days = [];
     var weekJSON = $.getJSON("https://query.yahooapis.com/v1/public/yq" +
         "l?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Ff" +
         "irstyearmatters.info%2Fcs%2Ftt1-CC1.2.html%22%20and%20xpath%3D'" +
@@ -11,10 +13,13 @@ $(document).ready(function(){
     function (data){
         var dateText = data.query.results.div.content;
         $("#top").html("<p>" + dateText + "</p>");
-        var days = [];
         $.each(data.query.results.tr, function (index, value) {
             if(index>0){
                 var myDay = new Day(index);
+
+                /**m
+                 * make into while loop so I can skip counters etc
+                 */
                 $.each(value.td, function (i, v){
                     if(i>0){
                         var myData = new Data(i);
@@ -30,8 +35,8 @@ $(document).ready(function(){
                             myData.addText(v.content);
                         }
                         if(v.colspan == 2){
-                            myDay.addData(myData);
-                            myData.hour ++;
+                            v.colspan = 1;
+                            value.td.splice(i, 0, v);
                         }
                         myDay.addData(myData);
                     }
@@ -45,29 +50,113 @@ $(document).ready(function(){
             console.log("datas day: " + value.index);
             value.logData();
         });
-
-        $("#bottom").html("<table></table>");
-
-        console.log(dateText.substr(7,3));
-        switch(dateText.substr(7,3)){
+        dayLetters = dateText.substr(7,3);
+        console.log(dayLetters);
+        switch(dayLetters){
             case "Mon":
-                days[0].showData($("table"));
-                days[0].logData($("table"));
+                showIndex = 0;
                 break;
             case "Tue":
-                days[1].showData($("table"));
+                showIndex = 1;
                 break;
             case "Wed":
-                days[2].showData($("table"));
+                showIndex = 2;
                 break;
             case "Thu":
-                days[3].showData($("table"));
+                showIndex = 3;
                 break;
             case "Fri":
-                days[4].showData($("table"));
+                showIndex = 4;
         }
+        days[showIndex].showData($("#bottom"));
     });
+    $("#prev").click(function(){
+        if(showIndex > 0) {
+            showIndex--;
+        }else{
+            showIndex = days.length-1;
+        }
+        days[showIndex].showData($("#bottom"));
+    });
+    $("#next").click(function(){
+        if(showIndex < days.length-1) {
+            showIndex++;
+        }else{
+            showIndex = 0;
+        }
+        days[showIndex].showData($("#bottom"));
+    });
+
+    function Day(index){
+        this.datas = new Array();
+        this.index = index;
+        switch(index){
+            case 1:
+                this.text = "Mon";
+                break;
+            case 2:
+                this.text = "Tue";
+                break;
+            case 3:
+                this.text = "Wed";
+                break;
+            case 4:
+                this.text = "Thu";
+                break;
+            case 5:
+                this.text = "Fri";
+                break;
+        }
+        this.addData = function(newData){
+            this.datas.push(newData);
+        };
+        this.logData = function(){
+            $.each(this.datas,function(index,value){
+                value.logText();
+            });
+        };
+        this.showData = function(container){
+            if(dayLetters == this){
+                container.addClass("today");
+            }else{
+                container.removeClass("today");
+            }
+            container.html("<p>" + this + "</p>");
+            container.append("<table></table>");
+            $.each(this.datas, function(i,v){
+                console.log(new Date($.now()).getHours() + " : " + v.hour);
+                if(new Date($.now()).getHours() == v.hour) {
+                    container.children("table").append("<tr><td class='thishour'>" + v.htmlText() + "</td></tr>");
+                }else{
+                    container.children("table").append("<tr><td>" + v.htmlText() + "</td></tr>");
+                }
+
+            });
+        };
+        this.toString = function(){
+            return this.text;
+        }
+    }
+
+    function Data(hour){
+        this.texts = new Array();
+        this.hour = hour+8;
+        this.isNow = false;
+        this.addText = function(newText){
+            this.texts.push(newText);
+        };
+        this.logText = function(){
+            $.each(this.texts, function(index,value){
+                console.log(index + " : " + value);
+            });
+        };
+        this.htmlText = function(){
+            console.log("html" + this.hour+this.texts[0]);
+            return this.texts[0];
+        };
+    }
 });
+
 
 function parseNumRange(range, hit){
     var dashIndex = range.indexOf("-");
@@ -78,41 +167,4 @@ function parseNumRange(range, hit){
         var secondNum = parseInt(range.slice(dashIndex+1));
         return firstNum <= parseInt(hit) && parseInt(hit) <= secondNum
     }
-}
-
-function Day(index){
-    this.datas = new Array();
-    this.index = index;
-    this.addData = function(newData){
-        this.datas.push(newData);
-    };
-    this.logData = function(){
-        $.each(this.datas,function(index,value){
-            value.logText();
-        });
-    };
-    this.showData = function(container){
-        $.each(this.datas, function(i,v){
-            container.append("<tr><td>" + v.htmlText() + "</td></tr>");
-        });
-    };
-
-}
-
-function Data(hour){
-    this.texts = new Array();
-    this.hour = hour;
-    this.isNow = false;
-    this.addText = function(newText){
-        this.texts.push(newText);
-    };
-    this.logText = function(){
-        $.each(this.texts, function(index,value){
-            console.log(index + " : " + value);
-        });
-    };
-    this.htmlText = function(){
-        console.log("html" + this.hour+this.texts[0]);
-            return this.texts[0];
-    };
 }
