@@ -10,107 +10,62 @@ $(document).ready(function(){
         "%2Ftr'&format=json&callback=",
     function (data){
         var dateText = data.query.results.div.content;
-        dateText = "\nIt is Thursday 11th December 2016, which is Semester 1 Week 11 and is an 'odd' week.";
         $("#top").html("<p>" + dateText + "</p>");
-        var datas = [];
+        var days = [];
         $.each(data.query.results.tr, function (index, value) {
             if(index>0){
+                var myDay = new Day(index);
                 $.each(value.td, function (i, v){
                     if(i>0){
+                        var myData = new Data(i);
                         if(v.div){
                             if(v.div.length == 2){
-                                var myData = new MultiData(index,i);
                                 $.each(v.div, function (ind, val) {
-                                    myData.addText(val);
+                                    myData.addText(val.content);
                                 });
-                                datas.push(myData);
                             }else{
-                                datas.push(new Data(v.div,index,i))
+                                myData.addText(v.div);
                             }
                         }else{
-                            datas.push(new Data(v.content,index,i))
+                            myData.addText(v.content);
                         }
+                        if(v.colspan == 2){
+                            myDay.addData(myData);
+                            myData.hour ++;
+                        }
+                        myDay.addData(myData);
                     }
                 });
+                days.push(myDay);
             }
         });
 
-        $.each(datas,function(index,value){
+        $.each(days,function(index,value){
             console.log("Each index: " + index);
-            console.log("datas day: " + value.day);
-            console.log("datas hour: " + value.hour);
-            console.log("datas text: " + value.text);
+            console.log("datas day: " + value.index);
+            value.logData();
         });
-        //alert(data.query.results.tr);
-        /**
-         * ############################################
-         */
-        /*$("#top").append("<table>");
-        $("#top").append("</table>");
-        var weekString = dateText.substr(dateText.indexOf("Week")+5,2);
-        $.each(data.query.results.tr, function (index, value) {
-            $("table").append("<tr id='row-" + index +"'>");
-            $("table").append("</tr>");
-            $.each(value.td, function (i, v){
-                if(v.div){
-                    //alert(v.div.length);
-                    if(v.div.length == 2) {
-                        //alert("2: " + v.div.length);
-                        $("#row-" + index).append("<td id='row-"+index+"-col-"+i+"'></td>");
-                        $.each(v.div, function (ind, val) {
-                            var startWeeks = val.content.indexOf("(")+6;
-                            var endWeeks = val.content.indexOf(")");
-                            var stringWeeks = val.content.slice(startWeeks,endWeeks);
-                            // alert("Before while" + stringWeeks);
-                            var isWeek = false;
-                            while(!isWeek){
-                                var firstComma = stringWeeks.indexOf(",");
-                                var curWeek;
-                                if(firstComma != -1){
-                                    curWeek = stringWeeks.slice(0,firstComma);
-                                    stringWeeks = stringWeeks.slice(firstComma+1);
-                                }else {
-                                    curWeek = stringWeeks;
-                                }
-                                isWeek = parseNumRange(curWeek, weekString) || isWeek;
-                                if(firstComma == -1){
-                                    break;
-                                }
-                            }
 
-                            if(isWeek) {
-                                $("#row-" + index + "-col-" + i).append("<div class='week'>" + val.content + "</div>");
-                            }else{
-                                $("#row-" + index + "-col-" + i).append("<div>" + val.content + "</div>");
-                            }
-                        });
-                    }else{
-                        $("#row-" + index).append("<td border='1px'>" + v.div + "</td>");
-                    }
-                }else {
-                    $("#row-" + index).append("<td border='2px'>" + v.content + "</td>");
-                }
-            });
-        });
-        console.log("." + dateText.substr(7,3) + "..");
+        $("#bottom").html("<table></table>");
+
+        console.log(dateText.substr(7,3));
         switch(dateText.substr(7,3)){
             case "Mon":
-                $("#row-1").addClass("day");
+                days[0].showData($("table"));
+                days[0].logData($("table"));
                 break;
             case "Tue":
-                $("#row-2").addClass("day");
+                days[1].showData($("table"));
                 break;
             case "Wed":
-                $("#row-3").addClass("day");
-                alert("test");
+                days[2].showData($("table"));
                 break;
             case "Thu":
-                $("#row-4").addClass("day");
+                days[3].showData($("table"));
                 break;
             case "Fri":
-                $("#row-5").addClass("day");
+                days[4].showData($("table"));
         }
-        // alert(weekString);*/
     });
 });
 
@@ -121,27 +76,43 @@ function parseNumRange(range, hit){
     }else{
         var firstNum = parseInt(range.slice(0,dashIndex));
         var secondNum = parseInt(range.slice(dashIndex+1));
-        if(firstNum <= parseInt(hit) && parseInt(hit) <= secondNum){
-            return true;
-        }else{
-            return false;
-        }
+        return firstNum <= parseInt(hit) && parseInt(hit) <= secondNum
     }
 }
 
-function Data(text,day,hour){
-    this.text = text;
-    this.day = day;
-    this.hour = hour;
-    this.isNow = false;
+function Day(index){
+    this.datas = new Array();
+    this.index = index;
+    this.addData = function(newData){
+        this.datas.push(newData);
+    };
+    this.logData = function(){
+        $.each(this.datas,function(index,value){
+            value.logText();
+        });
+    };
+    this.showData = function(container){
+        $.each(this.datas, function(i,v){
+            container.append("<tr><td>" + v.htmlText() + "</td></tr>");
+        });
+    };
+
 }
-function MultiData(day,hour){
-    this.text = "MultiData";
+
+function Data(hour){
     this.texts = new Array();
-    this.day = day;
     this.hour = hour;
     this.isNow = false;
     this.addText = function(newText){
         this.texts.push(newText);
+    };
+    this.logText = function(){
+        $.each(this.texts, function(index,value){
+            console.log(index + " : " + value);
+        });
+    };
+    this.htmlText = function(){
+        console.log("html" + this.hour+this.texts[0]);
+            return this.texts[0];
     };
 }
