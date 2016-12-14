@@ -11,12 +11,14 @@
     <!-- <i> tags used for glyphicons (styling) so technically incorrect use of HTML but hidden from accessibility with "aria-hidden=true" attribute-->
     <link rel="stylesheet" type="text/css" href="font-awesome-4.7.0/css/font-awesome.min.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="script.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.p2r.js" defer></script>
+    <script type="text/javascript" src="script.js"></script>
 </head>
 <body>
 <main id="bio" tabindex="-1">
     <!-- Content starts here -->
+    <div id="pullDown"> Pull to refresh </div>
     <section id="top">
 
     </section>
