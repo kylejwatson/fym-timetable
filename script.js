@@ -1,6 +1,22 @@
 /**
  * Created by kyle on 06/12/16.
  */
+
+$(document).on('pageshow',function(e,data){
+    var header = $("div[data-role='header']:visible");
+    var footer = $("div[data-role='footer']:visible");
+    var content = $("div[data-role='content']:visible:visible");
+    var viewport_height = $(window).height();
+    console.log(viewport_height);
+    console.log(header.height());
+    console.log(footer.height());
+    var content_height = viewport_height - header.outerHeight() - footer.outerHeight();
+    if((content.outerHeight() - header.outerHeight() - footer.outerHeight()) <= viewport_height) {
+        content_height -= (content.outerHeight() - content.height());
+    }
+    $(".ui-content").height(content_height);
+});
+
 $(document).ready(function(){
     var showIndex;
     var dayLetters;
@@ -13,7 +29,7 @@ $(document).ready(function(){
             "%2Ftr'&format=json&callback=",
             function (data){
                 var dateText = data.query.results.div.content;
-                $("#top").html("<p>" + dateText + "</p>");
+                $(".foot").html(dateText);
                 $.each(data.query.results.tr, function (index, value) {
                     if(index>0){
                         var myDay = new Day(index);
@@ -41,49 +57,16 @@ $(document).ready(function(){
                     }
                 });
 
+                dayLetters = dateText.substr(7,3);
                 $.each(days,function(index,value){
                     console.log("Each index: " + index);
                     console.log("datas day: " + value.index);
                     value.logData();
+                    value.showData();
                 });
-                dayLetters = dateText.substr(7,3);
-                console.log(dayLetters);
-                switch(dayLetters){
-                    case "Mon":
-                        showIndex = 0;
-                        break;
-                    case "Tue":
-                        showIndex = 1;
-                        break;
-                    case "Wed":
-                        showIndex = 2;
-                        break;
-                    case "Thu":
-                        showIndex = 3;
-                        break;
-                    case "Fri":
-                        showIndex = 4;
-                }
-                days[showIndex].showData($("#bottom"));
             });
     }
     loadData();
-    $("#prev").click(function(){
-        if(showIndex > 0) {
-            showIndex--;
-        }else{
-            showIndex = days.length-1;
-        }
-        days[showIndex].showData($("#bottom"));
-    });
-    $("#next").click(function(){
-        if(showIndex < days.length-1) {
-            showIndex++;
-        }else{
-            showIndex = 0;
-        }
-        days[showIndex].showData($("#bottom"));
-    });
 
     function Day(index){
         this.datas = new Array();
@@ -113,16 +96,13 @@ $(document).ready(function(){
                 value.logText();
             });
         };
-        this.showData = function(container){
-            if(dayLetters == this){
-                container.addClass("today");
-            }else{
-                container.removeClass("today");
-            }
-            container.html("<p>" + this + "</p>");
-            container.append("<table></table>");
+        this.showData = function(){
+            $("#"+this + " .head-day").html(""+ this);
+            console.log("#"+this);
+            console.log(dayLetters);
+            var container = $("#"+this).children(".ui-content");
+            container.html("<table></table>");
             $.each(this.datas, function(i,v){
-                console.log(new Date($.now()).getHours() + " : " + v.hour);
                 if(new Date($.now()).getHours() == v.hour) {
                     container.children("table").append("<tr><td class='thishour'>" + v.htmlText() + "</td></tr>");
                 }else{
@@ -130,6 +110,13 @@ $(document).ready(function(){
                 }
 
             });
+            if(dayLetters == this + ""){
+                console.log(this+"");
+                $("#"+this).addClass("today");
+                showIndex = this.index-1;
+                $.mobile.changePage($("#"+this), {transition: "flip"});
+            }
+            console.log(this);
         };
         this.toString = function(){
             return this.text;
@@ -173,21 +160,21 @@ $(document).ready(function(){
                 $("#pullDown").html("Release to refresh");
             }
         });*/
-    $("#bottom").on("swiperight",function(){
+    $(".ui-content").on("swiperight",function(){
         if(showIndex > 0) {
             showIndex--;
         }else{
-            showIndex = days.length-1;
+            showIndex = 4;
         }
-        days[showIndex].showData($(this));
+        $.mobile.changePage($("#"+days[showIndex]), {transition: "flip"});
     });
-    $("#bottom").on("swipeleft",function(){
-        if(showIndex < days.length-1) {
+    $(".ui-content").on("swipeleft",function(){
+        if(showIndex < 4) {
             showIndex++;
         }else{
             showIndex = 0;
         }
-        days[showIndex].showData($(this));
+        $.mobile.changePage($("#"+days[showIndex]), {transition: "flip"});
     });
 });
 
