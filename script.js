@@ -21,27 +21,27 @@ $(document).ready(function(){
                         /**m
                          * make into while loop so I can skip counters etc
                          */
-                        $.each(value.td, function (i, v){
-                            if(i>0){
-                                var myData = new Data(i);
-                                if(v.div){
-                                    if(v.div.length == 2){
-                                        $.each(v.div, function (ind, val) {
-                                            myData.addText(val.content);
-                                        });
-                                    }else{
-                                        myData.addText(v.div);
-                                    }
-                                }else{
-                                    myData.addText(v.content);
+                        for(var i = 1; i < value.td.length; i++) {
+                            var myData = new Data(i);
+                            var v = value.td[i];
+                            if (v.div) {
+                                if (v.div.length == 2) {
+                                    $.each(v.div, function (ind, val) {
+                                        myData.addText(val.content);
+                                    });
+                                } else {
+                                    myData.addText(v.div);
                                 }
-                                if(v.colspan == 2){
-                                    v.colspan = 1;
-                                    value.td.splice(i, 0, v);
-                                }
-                                myDay.addData(myData);
+                            } else {
+                                myData.addText(v.content);
                             }
-                        });
+                            if (v.colspan == 2) {
+                                v.colspan = 1;
+                                value.td.splice(i, 0, v);
+                                //i++;
+                            }
+                            myDay.addData(myData);
+                        }
                         days.push(myDay);
                     }
                 });
