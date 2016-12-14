@@ -17,10 +17,6 @@ $(document).ready(function(){
                 $.each(data.query.results.tr, function (index, value) {
                     if(index>0){
                         var myDay = new Day(index);
-
-                        /**m
-                         * make into while loop so I can skip counters etc
-                         */
                         for(var i = 1; i < value.td.length; i++) {
                             var myData = new Data(i);
                             var v = value.td[i];
@@ -38,7 +34,6 @@ $(document).ready(function(){
                             if (v.colspan == 2) {
                                 v.colspan = 1;
                                 value.td.splice(i, 0, v);
-                                //i++;
                             }
                             myDay.addData(myData);
                         }
@@ -161,7 +156,7 @@ $(document).ready(function(){
 
     var $feedback = $('#pullDown');
     var gPercent;
-    $("#bottom")
+   /* $("#bottom")
         .pullToRefresh()
         .on("end.pulltorefresh", function (e, percent){
             $("#pullDown").css("top","-60px");
@@ -177,7 +172,23 @@ $(document).ready(function(){
             }else{
                 $("#pullDown").html("Release to refresh");
             }
-        })
+        });*/
+    $("#bottom").on("swiperight",function(){
+        if(showIndex > 0) {
+            showIndex--;
+        }else{
+            showIndex = days.length-1;
+        }
+        days[showIndex].showData($(this));
+    });
+    $("#bottom").on("swipeleft",function(){
+        if(showIndex < days.length-1) {
+            showIndex++;
+        }else{
+            showIndex = 0;
+        }
+        days[showIndex].showData($(this));
+    });
 });
 
 
