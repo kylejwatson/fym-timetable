@@ -34,6 +34,10 @@ td{
 h3{
     font-size:0.8em !important;
 }
+.settings{
+    position: absolute !important;
+    right:20px !important;
+}
 h1{
     font-size: 2em !important;
     padding: 0 !important;

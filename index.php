@@ -31,9 +31,10 @@
     </section>-->
 
     <div id="Mon" data-role="page" >
-
         <div data-role="header">
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-left ui-btn-icon-notext">Home</a>
             <h1 class="head-day">Welcome To My Homepage</h1>
+            <a href="#myPanel" class="ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left ui-btn-icon-notext">Search</a>
         </div>
 
         <div data-role="main" class="ui-content table-div">
@@ -45,9 +46,10 @@
 
     </div>
     <div id="Tue" data-role="page">
-
         <div data-role="header">
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-left ui-btn-icon-notext">Home</a>
             <h1 class="head-day">Welcome To My Homepage</h1>
+            <a href="#myPanel" class="ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left ui-btn-icon-notext">Search</a>
         </div>
 
         <div data-role="main" class="ui-content table-div">
@@ -61,7 +63,9 @@
     <div id="Wed" data-role="page">
 
         <div data-role="header">
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-left ui-btn-icon-notext">Home</a>
             <h1 class="head-day">Welcome To My Homepage</h1>
+            <a href="#myPanel" class="ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left ui-btn-icon-notext">Settings</a>
         </div>
 
         <div data-role="main" class="ui-content table-div">
@@ -75,7 +79,9 @@
     <div id="Thu" data-role="page">
 
         <div data-role="header">
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-left ui-btn-icon-notext">Home</a>
             <h1 class="head-day">Welcome To My Homepage</h1>
+            <a href="#myPanel" class="ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left ui-btn-icon-notext">Search</a>
         </div>
 
         <div data-role="main" class="ui-content table-div">
@@ -89,7 +95,9 @@
     <div id="Fri" data-role="page">
 
         <div data-role="header">
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-icon-bars ui-btn-icon-left ui-btn-icon-notext">Home</a>
             <h1 class="head-day">Welcome To My Homepage</h1>
+            <a href="#myPanel" class="ui-btn ui-corner-all ui-shadow ui-icon-gear ui-btn-icon-left ui-btn-icon-notext">Search</a>
         </div>
 
         <div data-role="main" class="ui-content table-div">
