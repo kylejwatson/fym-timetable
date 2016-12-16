@@ -21,16 +21,33 @@ var showIndex = 3;
 var dayLetters;
 var days = [];
 function loadData(group,course,year){
-    var weekJSON = $.getJSON("https://query.yahooapis.com/v1/public/yq" +
+    var string;
+    var subString = "tt1-";
+    if((course == "CS" || course == "SE")){
+        if(year == 1) {
+            subString += "CC1." + group;
+        }else{
+            subString += course + year;
+            if(year == 2){
+                subString += "." + group;
+            }
+        }
+    }else{
+        subString += course + year;
+    }
+    console.log(subString);
+    string = "https://query.yahooapis.com/v1/public/yq" +
         "l?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Ff" +
-        "irstyearmatters.info%2Fcs%2Ftt1-CC1." + group + ".html%22%20and%20xpath%3D'" +
+        "irstyearmatters.info%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D'" +
         "%2F%2Fdiv%5Bcontains(%40id%2C%22date%22)%5D%20%7C%20%2F%2Ftbody" +
-        "%2Ftr'&format=json&callback=",
+        "%2Ftr'&format=json&callback=";
+    console.log(string);
+    var weekJSON = $.getJSON(string,
         function (data){
             $.post("save.php",
                 {data: JSON.stringify(data)},
                 function(data, status){
-                    alert("Data: " + data + "\nStatus: " + status);
+                    console.log("Data: " + data + "\nStatus: " + status);
                 });
             var dateText = data.query.results.div.content;
             $(".foot").html(dateText);
@@ -174,17 +191,17 @@ $(document).ready(function(){
         $.mobile.changePage($("#"+days[showIndex]), {transition: "flip"});
     });
 
-    loadData(2);
+    loadData(2,"SE",1);
 });
 
 function workshopGroup(){
-    loadData($("input[name=group]:checked").val());
+    loadData($("input[name=group]:checked").val() || 2,$("input[name=course-r]:checked").val() || "SE",$("input[name=year-r]:checked").val() || 1);
 }
 
 var panel = '' +
     '<div data-role="panel" id="myPanel" data-position="right" data-display="overlay"  data-theme="a">' +
     '   <h2>Settings</h2>' +
-    '<div data-role="collapsible">' +
+    '<div id="w-collapsible" data-role="collapsible">' +
     '   <h1>Change Workshop</h1>' +
     '   <form>' +
     '       <fieldset id="workshop-group" data-role="workshop-group">' +
@@ -200,35 +217,33 @@ var panel = '' +
     '       </fieldset>' +
     '    </form>' +
     '</div>'+
-    '<div data-role="collapsible">' +
+    '<div id="y-collapsible" data-role="collapsible">' +
     '   <h1>Change Year</h1>' +
     '   <form>' +
     '       <fieldset id="year" data-role="year">' +
     '               <legend>Year:</legend>' +
-    '               <label for="y1">1</label>' +
-    '               <input type="radio" name="group" id="y1" value="1" onchange="workshopGroup()">' +
-    '               <label for="y2">2</label>' +
-    '               <input type="radio" name="group" id="y2" value="2" onchange="workshopGroup()">' +
-    '               <label for="y3">3</label>' +
-    '               <input type="radio" name="group" id="y3" value="3" onchange="workshopGroup()">' +
-    '               <label for="y4">4</label>' +
-    '               <input type="radio" name="group" id="y4" value="4" onchange="workshopGroup()">' +
+    '               <label for="y1">First</label>' +
+    '               <input type="radio" name="year-r" id="y1" value="1" onchange="workshopGroup()">' +
+    '               <label for="y2">Second</label>' +
+    '               <input type="radio" name="year-r" id="y2" value="2" onchange="workshopGroup()">' +
+    '               <label for="y3">Final</label>' +
+    '               <input type="radio" name="year-r" id="y3" value="F" onchange="workshopGroup()">' +
     '       </fieldset>' +
     '    </form>' +
     '</div>'+
-    '<div data-role="collapsible">' +
+    '<div id="c-collapsible" data-role="collapsible">' +
     '   <h1>Change Course</h1>' +
     '   <form>' +
     '       <fieldset id="course" data-role="course">' +
     '               <legend>Course:</legend>' +
     '               <label for="c1">Computer Science</label>' +
-    '               <input type="radio" name="group" id="c1" value="CS" onchange="workshopGroup()">' +
+    '               <input type="radio" name="course-r" id="c1" value="CS" onchange="workshopGroup()">' +
     '               <label for="c2">Software Engineering</label>' +
-    '               <input type="radio" name="group" id="c2" value="SE" onchange="workshopGroup()">' +
+    '               <input type="radio" name="course-r" id="c2" value="SE" onchange="workshopGroup()">' +
     '               <label for="c3">Web Development</label>' +
-    '               <input type="radio" name="group" id="c3" value="WD" onchange="workshopGroup()">' +
+    '               <input type="radio" name="course-r" id="c3" value="WD" onchange="workshopGroup()">' +
     '               <label for="c4">Computer Networking</label>' +
-    '               <input type="radio" name="group" id="c4" value="CN" onchange="workshopGroup()">' +
+    '               <input type="radio" name="course-r" id="c4" value="CN" onchange="workshopGroup()">' +
     '       </fieldset>' +
     '    </form>' +
     '</div>'+
@@ -238,4 +253,16 @@ var panel = '' +
 $(document).one('pagebeforecreate', function () {
     $.mobile.pageContainer.prepend(panel);
     $("#myPanel").panel().enhanceWithin();
+    $("#w-collapsible").on("collapsibleexpand",function () {
+        $("#y-collapsible").collapsible("collapse");
+        $("#c-collapsible").collapsible("collapse");
+    });
+    $("#y-collapsible").on("collapsibleexpand",function () {
+        $("#w-collapsible").collapsible("collapse");
+        $("#c-collapsible").collapsible("collapse");
+    });
+    $("#c-collapsible").on("collapsibleexpand",function () {
+        $("#y-collapsible").collapsible("collapse");
+        $("#w-collapsible").collapsible("collapse");
+    });
 });
