@@ -201,6 +201,7 @@ function workshopGroup(){
 var panel = '' +
     '<div data-role="panel" id="myPanel" data-position="right" data-display="overlay"  data-theme="a">' +
     '   <h2>Settings</h2>' +
+    '   <div id="cset" data-role="collapsibleset">' +
     '<div id="w-collapsible" data-role="collapsible">' +
     '   <h1>Change Workshop</h1>' +
     '   <form>' +
@@ -246,23 +247,17 @@ var panel = '' +
     '               <input type="radio" name="course-r" id="c4" value="CN" onchange="workshopGroup()">' +
     '       </fieldset>' +
     '    </form>' +
+    '</div>' +
     '</div>'+
-    '    <a id="settings" href="javascript:workshopGroup()" data-rel="close" class="ui-btn ui-btn-inline ui-shadow ui-corner-all ui-btn-a ui-icon-delete ui-btn-icon-left">Close panel</a>' +
+    '    <a id="settings" href="javascript:b4workshopGroup()" data-rel="close" class="ui-btn ui-btn-inline ui-shadow ui-corner-all ui-btn-a ui-icon-delete ui-btn-icon-left">Close panel</a>' +
     '</div>';
 
 $(document).one('pagebeforecreate', function () {
     $.mobile.pageContainer.prepend(panel);
     $("#myPanel").panel().enhanceWithin();
-    $("#w-collapsible").on("collapsibleexpand",function () {
-        $("#y-collapsible").collapsible("collapse");
-        $("#c-collapsible").collapsible("collapse");
-    });
-    $("#y-collapsible").on("collapsibleexpand",function () {
-        $("#w-collapsible").collapsible("collapse");
-        $("#c-collapsible").collapsible("collapse");
-    });
-    $("#c-collapsible").on("collapsibleexpand",function () {
-        $("#y-collapsible").collapsible("collapse");
-        $("#w-collapsible").collapsible("collapse");
-    });
 });
+
+function b4workshopGroup(){
+    $("#cset").children().collapsible("collapse");
+    workshopGroup();
+}
