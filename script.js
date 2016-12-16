@@ -20,13 +20,18 @@ $(document).on('pageshow',function(e,data){
 var showIndex = 3;
 var dayLetters;
 var days = [];
-function loadData(){
+function loadData(group,course,year){
     var weekJSON = $.getJSON("https://query.yahooapis.com/v1/public/yq" +
         "l?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Ff" +
-        "irstyearmatters.info%2Fcs%2Ftt1-CC1.2.html%22%20and%20xpath%3D'" +
+        "irstyearmatters.info%2Fcs%2Ftt1-CC1." + group + ".html%22%20and%20xpath%3D'" +
         "%2F%2Fdiv%5Bcontains(%40id%2C%22date%22)%5D%20%7C%20%2F%2Ftbody" +
         "%2Ftr'&format=json&callback=",
         function (data){
+            $.post("save.php",
+                {data: JSON.stringify(data)},
+                function(data, status){
+                    alert("Data: " + data + "\nStatus: " + status);
+                });
             var dateText = data.query.results.div.content;
             $(".foot").html(dateText);
             $.each(data.query.results.tr, function (index, value) {
@@ -169,11 +174,11 @@ $(document).ready(function(){
         $.mobile.changePage($("#"+days[showIndex]), {transition: "flip"});
     });
 
-    loadData();
+    loadData(2);
 });
 
 function workshopGroup(){
-    console.log($("input[name=group]:checked").val());
+    loadData($("input[name=group]:checked").val());
 }
 
 var panel = '' +
@@ -185,13 +190,45 @@ var panel = '' +
     '       <fieldset id="workshop-group" data-role="workshop-group">' +
     '               <legend>Workshop Group:</legend>' +
     '               <label for="wg1">1</label>' +
-    '               <input type="radio" name="group" id="wg1" value="wg1" onchange="workshopGroup()">' +
+    '               <input type="radio" name="group" id="wg1" value="1" onchange="workshopGroup()">' +
     '               <label for="wg2">2</label>' +
-    '               <input type="radio" name="group" id="wg2" value="wg2" onchange="workshopGroup()">' +
+    '               <input type="radio" name="group" id="wg2" value="2" onchange="workshopGroup()">' +
     '               <label for="wg3">3</label>' +
-    '               <input type="radio" name="group" id="wg3" value="wg3" onchange="workshopGroup()">' +
+    '               <input type="radio" name="group" id="wg3" value="3" onchange="workshopGroup()">' +
     '               <label for="wg4">4</label>' +
-    '               <input type="radio" name="group" id="wg4" value="wg4" onchange="workshopGroup()">' +
+    '               <input type="radio" name="group" id="wg4" value="4" onchange="workshopGroup()">' +
+    '       </fieldset>' +
+    '    </form>' +
+    '</div>'+
+    '<div data-role="collapsible">' +
+    '   <h1>Change Year</h1>' +
+    '   <form>' +
+    '       <fieldset id="year" data-role="year">' +
+    '               <legend>Year:</legend>' +
+    '               <label for="y1">1</label>' +
+    '               <input type="radio" name="group" id="y1" value="1" onchange="workshopGroup()">' +
+    '               <label for="y2">2</label>' +
+    '               <input type="radio" name="group" id="y2" value="2" onchange="workshopGroup()">' +
+    '               <label for="y3">3</label>' +
+    '               <input type="radio" name="group" id="y3" value="3" onchange="workshopGroup()">' +
+    '               <label for="y4">4</label>' +
+    '               <input type="radio" name="group" id="y4" value="4" onchange="workshopGroup()">' +
+    '       </fieldset>' +
+    '    </form>' +
+    '</div>'+
+    '<div data-role="collapsible">' +
+    '   <h1>Change Course</h1>' +
+    '   <form>' +
+    '       <fieldset id="course" data-role="course">' +
+    '               <legend>Course:</legend>' +
+    '               <label for="c1">Computer Science</label>' +
+    '               <input type="radio" name="group" id="c1" value="CS" onchange="workshopGroup()">' +
+    '               <label for="c2">Software Engineering</label>' +
+    '               <input type="radio" name="group" id="c2" value="SE" onchange="workshopGroup()">' +
+    '               <label for="c3">Web Development</label>' +
+    '               <input type="radio" name="group" id="c3" value="WD" onchange="workshopGroup()">' +
+    '               <label for="c4">Computer Networking</label>' +
+    '               <input type="radio" name="group" id="c4" value="CN" onchange="workshopGroup()">' +
     '       </fieldset>' +
     '    </form>' +
     '</div>'+
