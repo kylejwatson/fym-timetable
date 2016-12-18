@@ -197,46 +197,26 @@ $(document).ready(function(){
 function workshopGroup(opt){
     if(opt == 2){
         console.log("year 2");
-        if(!$("#w-collapsible").length){
-            $("#cset").append(wCollapsible);
-            $("#cset").enhanceWithin();
+        if($("#wg1").checkboxradio("option", "disabled")){
+            $("#workshop-group").find("input").checkboxradio("enable");
+            $("#workshop-group").find("input").checkboxradio("refresh");
         }
-        $("#workshop-group").html(threeWS);
-        $("#workshop-group").enhanceWithin();
+        $("#wg4").checkboxradio("disable");
+        $("#wg4").checkboxradio("refresh");
     }else if(opt == 1){
-        if(!$("#w-collapsible").length){
-            $("#cset").append(wCollapsible);
-            $("#cset").enhanceWithin();
+        if($("#wg1").checkboxradio("option", "disabled")){
+            $("#workshop-group").find("input").checkboxradio("enable");
+            $("#workshop-group").find("input").checkboxradio("refresh");
         }else {
-            $("#workshop-group").html(threeWS +
-                '               <label for="wg4">4</label>' +
-                '               <input type="radio" name="group" id="wg4" value="4" onchange="workshopGroup()">');
-            $("#workshop-group").enhanceWithin();
+            $("#wg4").checkboxradio("enable");
+            $("#wg4").checkboxradio("refresh");
         }
     }else if(opt == "f"){
-        $("#w-collapsible").remove();
+        $("#workshop-group").find("input").checkboxradio("disable");
+        $("#workshop-group").find("input").checkboxradio("refresh");
     }
     loadData($("input[name=group]:checked").val() || 2,$("input[name=course-r]:checked").val() || "SE",$("input[name=year-r]:checked").val() || 1);
 }
-
-var threeWS = '<legend>Workshop Group:</legend>' +
-'               <label for="wg1">1</label>' +
-'               <input type="radio" name="group" id="wg1" value="1" onchange="workshopGroup()">' +
-'               <label for="wg2">2</label>' +
-'               <input type="radio" name="group" id="wg2" value="2" onchange="workshopGroup()">' +
-'               <label for="wg3">3</label>' +
-'               <input type="radio" name="group" id="wg3" value="3" onchange="workshopGroup()">';
-
-var wCollapsible =  '<div id="w-collapsible" data-role="collapsible">' +
-    '   <h1>Change Workshop</h1>' +
-    '   <form>' +
-    '       <fieldset id="workshop-group" data-role="workshop-group">' +
-    threeWS +
-    '               <label for="wg4">4</label>' +
-    '               <input type="radio" name="group" id="wg4" value="4" onchange="workshopGroup()">' +
-    '       </fieldset>' +
-    '    </form>' +
-    '</div>';
 
 var panel = '' +
     '<div data-role="panel" id="myPanel" data-position="right" data-display="overlay"  data-theme="a">' +
@@ -272,7 +252,22 @@ var panel = '' +
     '       </fieldset>' +
     '    </form>' +
     '</div>' +
-        wCollapsible + 
+    '<div id="w-collapsible" data-role="collapsible">' +
+    '   <h1>Change Workshop</h1>' +
+    '   <form>' +
+    '       <fieldset id="workshop-group" data-role="workshop-group">' +
+    '<legend>Workshop Group:</legend>' +
+    '               <label for="wg1">1</label>' +
+    '               <input type="radio" name="group" id="wg1" value="1" onchange="workshopGroup()">' +
+    '               <label for="wg2">2</label>' +
+    '               <input type="radio" name="group" id="wg2" value="2" onchange="workshopGroup()">' +
+    '               <label for="wg3">3</label>' +
+    '               <input type="radio" name="group" id="wg3" value="3" onchange="workshopGroup()">' +
+    '               <label for="wg4">4</label>' +
+    '               <input type="radio" name="group" id="wg4" value="4" onchange="workshopGroup()">' +
+    '       </fieldset>' +
+    '    </form>' +
+    '</div>' +
     '</div>'+
     '    <a id="settings" href="javascript:b4workshopGroup()" data-rel="close" class="ui-btn ui-btn-inline ui-shadow ui-corner-all ui-btn-a ui-icon-delete ui-btn-icon-left">Close panel</a>' +
     '</div>';
