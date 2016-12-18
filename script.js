@@ -2,14 +2,11 @@
  * Created by kyle on 06/12/16.
  */
 
-$(document).on('pageshow',function(e,data){
+$(document).on('pageshow',function(data){
     var header = $("div[data-role='header']:visible");
     var footer = $("div[data-role='footer']:visible");
     var content = $("div[data-role='content']:visible:visible");
     var viewport_height = $(window).height();
-    console.log(viewport_height);
-    console.log(header.height());
-    console.log(footer.height());
     var content_height = viewport_height - header.outerHeight() - footer.outerHeight();
     if((content.outerHeight() - header.outerHeight() - footer.outerHeight()) <= viewport_height) {
         content_height -= (content.outerHeight() - content.height());
@@ -35,13 +32,11 @@ function loadData(group,course,year){
     }else{
         subString += course + year;
     }
-    console.log(subString);
     string = "https://query.yahooapis.com/v1/public/yq" +
         "l?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Ff" +
         "irstyearmatters.info%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D'" +
         "%2F%2Fdiv%5Bcontains(%40id%2C%22date%22)%5D%20%7C%20%2F%2Ftbody" +
         "%2Ftr'&format=json&callback=";
-    console.log(string);
     var weekJSON = $.getJSON(string,
         function (data){
             $.post("save.php",
@@ -80,8 +75,6 @@ function loadData(group,course,year){
 
             dayLetters = dateText.substr(7,3);
             $.each(days,function(index,value){
-                console.log("Each index: " + index);
-                console.log("datas day: " + value.index);
                 value.logData();
                 value.showData();
             });
@@ -89,7 +82,7 @@ function loadData(group,course,year){
 }
 
 function Day(index){
-    this.datas = new Array();
+    this.datas = [];
     this.index = index;
     switch(index){
         case 1:
@@ -117,11 +110,9 @@ function Day(index){
         });
     };
     this.showData = function(){
+        var thisSelector = $("#"+this);
         $("#"+this + " .head-day").html(""+ this);
-        console.log("#"+this);
-        console.log(dayLetters);
-        var container = $("#"+this).find(".ui-content");
-        console.log(container.html());
+        var container = thisSelector.find(".ui-content");
         container.html("<table></table>");
         $.each(this.datas, function(i,v){
             if(new Date($.now()).getHours() == v.hour) {
@@ -129,15 +120,12 @@ function Day(index){
             }else{
                 container.children("table").append("<tr><td>" + v.htmlText() + "</td></tr>");
             }
-
         });
         if(dayLetters == this + ""){
-            console.log(this+"");
-            $("#"+this).addClass("today");
-            showIndex = this.index --;
-            $.mobile.changePage($("#" + this));
+            thisSelector.addClass("today");
+            showIndex = this.index - 1;
+            $.mobile.changePage(thisSelector);
         }
-        console.log(this);
     };
     this.toString = function(){
         return this.text;
@@ -145,7 +133,7 @@ function Day(index){
 }
 
 function Data(hour){
-    this.texts = new Array();
+    this.texts = [];
     this.hour = hour+8;
     this.isNow = false;
     this.addText = function(newText){
@@ -157,7 +145,6 @@ function Data(hour){
         });
     };
     this.htmlText = function(){
-        console.log("html" + this.hour+this.texts[0]);
         return this.texts[0];
     };
 }
@@ -174,7 +161,8 @@ function parseNumRange(range, hit){
 }
 
 $(document).ready(function(){
-    $(".ui-content").on("swiperight",function(){
+    var pageContent = $(".ui-content");
+    pageContent.on("swiperight",function(){
         if(showIndex > 0) {
             showIndex--;
         }else{
@@ -182,7 +170,7 @@ $(document).ready(function(){
         }
         $.mobile.changePage($("#"+days[showIndex]), {transition: "flip"});
     });
-    $(".ui-content").on("swipeleft",function(){
+    pageContent.on("swipeleft",function(){
         if(showIndex < 4) {
             showIndex++;
         }else{
@@ -194,28 +182,71 @@ $(document).ready(function(){
     loadData(2,"SE",1);
 });
 
-function workshopGroup(opt){
-    if(opt == 2){
-        console.log("year 2");
-        if($("#wg1").checkboxradio("option", "disabled")){
-            $("#workshop-group").find("input").checkboxradio("enable");
-            $("#workshop-group").find("input").checkboxradio("refresh");
-        }
-        $("#wg4").checkboxradio("disable");
-        $("#wg4").checkboxradio("refresh");
-    }else if(opt == 1){
-        if($("#wg1").checkboxradio("option", "disabled")){
-            $("#workshop-group").find("input").checkboxradio("enable");
-            $("#workshop-group").find("input").checkboxradio("refresh");
-        }else {
-            $("#wg4").checkboxradio("enable");
-            $("#wg4").checkboxradio("refresh");
-        }
-    }else if(opt == "f"){
-        $("#workshop-group").find("input").checkboxradio("disable");
-        $("#workshop-group").find("input").checkboxradio("refresh");
+function workshopGroup(){
+    var checkedYear = $("input[name=year-r]:checked").val();
+    var wg1 = $("#wg1");
+    var wg4 = $("#wg4");
+    var groupInputs = $("input[name=group]");
+    switch(checkedYear){
+        case "1":
+            if(wg1.checkboxradio("option", "disabled")){
+                groupInputs.checkboxradio("enable");
+                groupInputs.checkboxradio("refresh");
+            }else if(wg4.checkboxradio("option", "disabled")){
+                wg4.checkboxradio("enable");
+                wg4.checkboxradio("refresh");
+            }
+            break;
+        case "2":
+            if(wg1.checkboxradio("option", "disabled")) {
+                groupInputs.checkboxradio("enable");
+                groupInputs.checkboxradio("refresh");
+            }
+            wg4.checkboxradio("disable");
+            wg4.checkboxradio("refresh");
+            break;
+        case "F":
+            groupInputs.checkboxradio("disable");
+            groupInputs.checkboxradio("refresh");
+            break;
+        //case
     }
-    loadData($("input[name=group]:checked").val() || 2,$("input[name=course-r]:checked").val() || "SE",$("input[name=year-r]:checked").val() || 1);
+
+    var checkedCourse = $("input[name=course-r]:checked").val();
+    var y1 = $("#y1");
+    var y3 = $("#y3");
+    var yearInputs = $("input[name=year-r]");
+    switch(checkedCourse){
+        case "WD":
+            groupInputs.checkboxradio("disable");
+            groupInputs.checkboxradio("refresh");
+            y3.checkboxradio("disable");
+            y3.checkboxradio("refresh");
+            break;
+        case "CN":
+            groupInputs.checkboxradio("disable");
+            groupInputs.checkboxradio("refresh");
+            yearInputs.checkboxradio("disable");
+            yearInputs.checkboxradio("refresh");
+            break;
+        default:
+            if(wg1.checkboxradio("option", "disabled") && checkedYear != "F"){
+                groupInputs.checkboxradio("enable");
+                groupInputs.checkboxradio("refresh");
+            }else if(wg4.checkboxradio("option", "disabled") && checkedYear != "2"){
+                wg4.checkboxradio("enable");
+                wg4.checkboxradio("refresh");
+            }
+            if(y1.checkboxradio("option", "disabled")){
+                yearInputs.checkboxradio("enable");
+                yearInputs.checkboxradio("refresh");
+            }else if(y3.checkboxradio("option", "disabled")){
+                y3.checkboxradio("enable");
+                y3.checkboxradio("refresh");
+            }
+    }
+
+    loadData($("input[name=group]:checked").val() || 2,checkedCourse || "SE",checkedYear || 1);
 }
 
 var panel = '' +
@@ -228,11 +259,11 @@ var panel = '' +
     '       <fieldset id="year" data-role="year">' +
     '               <legend>Year:</legend>' +
     '               <label for="y1">First</label>' +
-    '               <input type="radio" name="year-r" id="y1" value="1" onchange="workshopGroup(1)">' +
+    '               <input type="radio" name="year-r" id="y1" value="1" onchange="workshopGroup()">' +
     '               <label for="y2">Second</label>' +
-    '               <input type="radio" name="year-r" id="y2" value="2" onchange="workshopGroup(2)">' +
+    '               <input type="radio" name="year-r" id="y2" value="2" onchange="workshopGroup()">' +
     '               <label for="y3">Final</label>' +
-    '               <input type="radio" name="year-r" id="y3" value="F" onchange="workshopGroup(\'f\')">' +
+    '               <input type="radio" name="year-r" id="y3" value="F" onchange="workshopGroup()">' +
     '       </fieldset>' +
     '    </form>' +
     '</div>'+
