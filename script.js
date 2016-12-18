@@ -1,5 +1,8 @@
 /**
  * Created by kyle on 06/12/16.
+ * TODO: fix broken ass code
+ *       -figure out why 'WDF' can happen, whats not breaking it
+ *       -check that when something is not checked in a category it gets set to a default
  */
 
 $(document).on('pageshow',function(data){
@@ -18,20 +21,20 @@ var showIndex = 3;
 var dayLetters;
 var days = [];
 function loadData(group,course,year){
+    course += "";
+    group += "";
+    year += "";
     var string;
     var subString = "tt1-";
-    if((course == "CS" || course == "SE")){
-        if(year == 1) {
-            subString += "CC1." + group;
-        }else{
-            subString += course + year;
-            if(year == 2){
-                subString += "." + group;
-            }
+    if(course == "CS" || course == "SE" || course == "CC"){
+        subString += course + year;
+        if(year != "F"){
+            subString += "." + group;
         }
     }else{
         subString += course + year;
     }
+    console.log(subString);
     string = "https://query.yahooapis.com/v1/public/yq" +
         "l?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Ff" +
         "irstyearmatters.info%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D'" +
@@ -39,14 +42,16 @@ function loadData(group,course,year){
         "%2Ftr'&format=json&callback=";
     var weekJSON = $.getJSON(string,
         function (data){
+            var dateText = data.query.results.div.content;
+            var tableResults = data.query.results.tr;
             $.post("save.php",
-                {data: JSON.stringify(data)},
+                {data: JSON.stringify(tableResults),
+                name: subString},
                 function(data, status){
                     console.log("Data: " + data + "\nStatus: " + status);
                 });
-            var dateText = data.query.results.div.content;
             $(".foot").html(dateText);
-            $.each(data.query.results.tr, function (index, value) {
+            $.each(tableResults, function (index, value) {
                 if(index>0){
                     var myDay = new Day(index);
                     for(var i = 1; i < value.td.length; i++) {
@@ -179,7 +184,7 @@ $(document).ready(function(){
         $.mobile.changePage($("#"+days[showIndex]), {transition: "flip"});
     });
 
-    loadData(2,"SE",1);
+    workshopGroup();
 });
 
 function workshopGroup(){
@@ -203,10 +208,12 @@ function workshopGroup(){
                 groupInputs.checkboxradio("refresh");
             }
             wg4.checkboxradio("disable");
+            wg4.attr("checked", false);
             wg4.checkboxradio("refresh");
             break;
         case "F":
             groupInputs.checkboxradio("disable");
+            groupInputs.attr("checked", false);
             groupInputs.checkboxradio("refresh");
             break;
         //case
@@ -219,21 +226,28 @@ function workshopGroup(){
     switch(checkedCourse){
         case "WD":
             groupInputs.checkboxradio("disable");
+            groupInputs.attr("checked", false);
             groupInputs.checkboxradio("refresh");
+            if(y1.checkboxradio("option", "disabled")){
+                yearInputs.checkboxradio("enable");
+            }
             y3.checkboxradio("disable");
+            y3.attr("checked", false);
             y3.checkboxradio("refresh");
             break;
         case "CN":
             groupInputs.checkboxradio("disable");
+            groupInputs.attr("checked", false);
             groupInputs.checkboxradio("refresh");
             yearInputs.checkboxradio("disable");
+            yearInputs.attr("checked", false);
             yearInputs.checkboxradio("refresh");
             break;
         default:
             if(wg1.checkboxradio("option", "disabled") && checkedYear != "F"){
                 groupInputs.checkboxradio("enable");
                 groupInputs.checkboxradio("refresh");
-            }else if(wg4.checkboxradio("option", "disabled") && checkedYear != "2"){
+            }else if(wg4.checkboxradio("option", "disabled") && (checkedYear == "1")){
                 wg4.checkboxradio("enable");
                 wg4.checkboxradio("refresh");
             }
@@ -245,8 +259,32 @@ function workshopGroup(){
                 y3.checkboxradio("refresh");
             }
     }
-
-    loadData($("input[name=group]:checked").val() || 2,checkedCourse || "SE",checkedYear || 1);
+    var checkedGroup = $("input[name=group]:checked").val();
+    var CSorSE = checkedCourse == "CS" || checkedCourse == "SE";
+    console.log("testnull 1: " + checkedYear);
+    console.log("testnull 3: " + (checkedYear == null));
+    console.log("testnull 4: " + (checkedYear == undefined));
+    if(checkedCourse == null){
+        $("#c2").attr("checked", true);
+        checkedCourse = "SE";
+        CSorSE = true;
+        console.log("course isNull")
+    }
+    if(CSorSE && (checkedGroup == null)){
+        $("#wg2").attr("checked", true);
+        checkedGroup = "2";
+        console.log("group isNull")
+    }
+    if((CSorSE || checkedCourse == "WD") && (checkedYear == null)){
+        y1.attr("checked", true);
+        checkedYear = "1"
+        console.log("year isNull")
+    }
+    if(CSorSE && checkedYear == "1"){
+        checkedCourse = "CC";
+        console.log("course isCC")
+    }
+    loadData(checkedGroup,checkedCourse,checkedYear);
 }
 
 var panel = '' +
