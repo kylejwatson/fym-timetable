@@ -1,8 +1,8 @@
 /**
  * Created by kyle on 06/12/16.
  * TODO: fix broken ass code
- *       -figure out why 'WDF' can happen, whats not breaking it
- *       -check that when something is not checked in a category it gets set to a default
+ *       -figure out why 'CNUndefined' can happen, whats not breaking it
+ *       -port seperate json files to DBs so it works on server
  */
 
 $(document).on('pageshow',function(data){
@@ -231,8 +231,11 @@ function workshopGroup(){
             if(y1.checkboxradio("option", "disabled")){
                 yearInputs.checkboxradio("enable");
             }
+            if(checkedYear == "F") {
+                y3.attr("checked", false);
+                checkedYear = $("input[name=year-r]:checked").val();
+            }
             y3.checkboxradio("disable");
-            y3.attr("checked", false);
             y3.checkboxradio("refresh");
             break;
         case "CN":
@@ -242,6 +245,7 @@ function workshopGroup(){
             yearInputs.checkboxradio("disable");
             yearInputs.attr("checked", false);
             yearInputs.checkboxradio("refresh");
+            checkedYear = $("input[name=year-r]:checked").val();
             break;
         default:
             if(wg1.checkboxradio("option", "disabled") && checkedYear != "F"){
@@ -259,11 +263,10 @@ function workshopGroup(){
                 y3.checkboxradio("refresh");
             }
     }
+
     var checkedGroup = $("input[name=group]:checked").val();
     var CSorSE = checkedCourse == "CS" || checkedCourse == "SE";
-    console.log("testnull 1: " + checkedYear);
-    console.log("testnull 3: " + (checkedYear == null));
-    console.log("testnull 4: " + (checkedYear == undefined));
+
     if(checkedCourse == null){
         $("#c2").attr("checked", true);
         checkedCourse = "SE";
