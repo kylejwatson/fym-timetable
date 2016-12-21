@@ -245,7 +245,6 @@ function workshopGroup(){
             yearInputs.checkboxradio("disable");
             yearInputs.attr("checked", false);
             yearInputs.checkboxradio("refresh");
-            checkedYear = $("input[name=year-r]:checked").val();
             break;
         default:
             if(wg1.checkboxradio("option", "disabled") && checkedYear != "F"){
@@ -265,27 +264,27 @@ function workshopGroup(){
     }
 
     var checkedGroup = $("input[name=group]:checked").val();
+    if(checkedCourse == "CN"){
+        checkedYear = 1;
+        console.log("CN Debug: " + checkedCourse + checkedGroup + checkedYear);
+    }
     var CSorSE = checkedCourse == "CS" || checkedCourse == "SE";
 
     if(checkedCourse == null){
         $("#c2").attr("checked", true);
         checkedCourse = "SE";
         CSorSE = true;
-        console.log("course isNull")
     }
     if(CSorSE && (checkedGroup == null)){
         $("#wg2").attr("checked", true);
         checkedGroup = "2";
-        console.log("group isNull")
     }
     if((CSorSE || checkedCourse == "WD") && (checkedYear == null)){
         y1.attr("checked", true);
-        checkedYear = "1"
-        console.log("year isNull")
+        checkedYear = "1";
     }
     if(CSorSE && checkedYear == "1"){
         checkedCourse = "CC";
-        console.log("course isCC")
     }
     loadData(checkedGroup,checkedCourse,checkedYear);
 }
