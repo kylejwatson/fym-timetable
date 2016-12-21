@@ -1,8 +1,7 @@
 /**
  * Created by kyle on 06/12/16.
  * TODO: fix broken ass code
- *       -figure out why 'CNUndefined' can happen, whats not breaking it
- *       -port seperate json files to DBs so it works on server
+ *       -port seperate json files to DBs so it works on server!!!!!!
  */
 
 $(document).on('pageshow',function(data){
