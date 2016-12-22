@@ -19,69 +19,135 @@ $(document).on('pageshow',function(data){
 var showIndex = 3;
 var dayLetters;
 var days = [];
-function loadData(group,course,year){
-    course += "";
-    group += "";
-    year += "";
+function checkData(group,course,year){
+    var subString = getSubString(group,course,year);
+    $.ajax({
+        url:'tables/'+subString+'.txt',
+        dataType:'text',
+        error: function()
+        {
+            console.log("checkData: "+"file not yet created:tables/" + subString + ".txt");
+            loadData(group,course,year,"empty");
+        },
+        success: function(dataText)
+        {
+            var string = "https://query.yahooapis.com/v1/public/yql?q=select%20conte" +
+                "nt%20from%20html%20where%20url%3D%22http%3A%2F%2Ffirstyearmatters.i" +
+                "nfo%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D%22%2F%2Fdiv%5Bcontain" +
+                "s(%40id%2C%20'content')%5D%2Fp%22%20limit%201&format=json&callback=";
+            console.log("checkData: " + string);
+            var dateJSON = $.getJSON(string, function (data){
+                    console.log("checkData: Success");
+                    if(dataText.trim() == data.query.results.p.trim()){
+                        console.log("checkData: working"+dataText);
+                        $.ajax({
+                            url:'tables/'+subString+'.json',
+                            dataType:'json',
+                            success: function(dataJSON)
+                            {
+                                console.log("checkData: text file found, matches mirror, loaded local table sent to processor");
+                                processJSON(dataJSON);
+                            }});
+                    }else{
+                        console.log("checkData: text file found, doesnt match mirror " + data);
+                        loadData(group,course,year,dataText.trim());
+                    }
+                });
+        }
+    });
+}
+
+function getSubString(g,c,y){
+    c += "";
+    g += "";
+    y += "";
     var string;
     var subString = "tt1-";
-    if(course == "CS" || course == "SE" || course == "CC"){
-        subString += course + year;
-        if(year != "F"){
-            subString += "." + group;
+    if(c == "CS" || c == "SE" || c == "CC"){
+        subString += c + y;
+        if(y != "F"){
+            subString += "." + g;
         }
     }else{
-        subString += course + year;
+        subString += c + y;
     }
-    console.log(subString);
-    string = "https://query.yahooapis.com/v1/public/yq" +
-        "l?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Ff" +
-        "irstyearmatters.info%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D'" +
-        "%2F%2Fdiv%5Bcontains(%40id%2C%22date%22)%5D%20%7C%20%2F%2Ftbody" +
-        "%2Ftr'&format=json&callback=";
+    return subString;
+}
+
+function processJSON(tableResults){
+    var string = "https://query.yahooapis.com/v1/public" +
+        "/yql?q=select%20content%20from%20html%20whe" +
+        "re%20url%3D%22http%3A%2F%2Ffirstyearmatters" +
+        ".info%2Fcs%2Ftt1-CC1.2.html%22%20and%20xpath%" +
+        "3D%22%2F%2Fdiv%5Bcontains(%40id%2C%20'date')%5D%2" +
+        "2&format=json&callback=";
     var weekJSON = $.getJSON(string,
         function (data){
-            var dateText = data.query.results.div.content;
+            var dateText = data.query.results.div;
+            $(".foot").html(dateText);
+            dayLetters = dateText.substr(7,3);
+            console.log("processJSON(): " + dateText)
+        });
+
+    $.each(tableResults, function (index, value) {
+        if(index>0){
+            var myDay = new Day(index);
+            for(var i = 1; i < value.td.length; i++) {
+                var myData = new Data(i);
+                var v = value.td[i];
+                if (v.div) {
+                    if (v.div.length == 2) {
+                        $.each(v.div, function (ind, val) {
+                            myData.addText(val.content);
+                        });
+                    } else {
+                        myData.addText(v.div);
+                    }
+                } else {
+                    myData.addText(v.content);
+                }
+                if (v.colspan == 2) {
+                    v.colspan = 1;
+                    value.td.splice(i, 0, v);
+                }
+                myDay.addData(myData);
+            }
+            days.push(myDay);
+        }
+    });
+
+    $.each(days,function(index,value){
+        //value.logData();
+        value.showData();
+    });
+}
+
+function loadData(group,course,year,dataText){
+    var subString = getSubString(group,course,year);
+    $.post("save.php",
+        {type: "text",
+            data: dataText,
+            name: subString},
+        function(data, status){
+            console.log("checkData : saving mirror text successfully " + data + "\nStatus: " + status);
+        });
+    console.log("loadData(): " + subString);
+    var string = "https://query.yahooapis.com" +
+        "/v1/public/yql?q=select%20*%20from%20h" +
+        "tml%20where%20url%3D%22http%3A%2F%2Ffirstyea" +
+        "rmatters.info%2Fcs%2F"+subString+".html%22%20" +
+        "and%20xpath%3D%22%2F%2Ftbody%2Ftr%22&format=json&callback="
+    var weekJSON = $.getJSON(string,
+        function (data){
             var tableResults = data.query.results.tr;
             $.post("save.php",
-                {data: JSON.stringify(tableResults),
-                name: subString},
+                {type:"table",
+                    data: JSON.stringify(tableResults),
+                    name: subString},
                 function(data, status){
-                    console.log("Data: " + data + "\nStatus: " + status);
+                    console.log("loadData(): Data: " + data + "\nStatus: " + status);
                 });
-            $(".foot").html(dateText);
-            $.each(tableResults, function (index, value) {
-                if(index>0){
-                    var myDay = new Day(index);
-                    for(var i = 1; i < value.td.length; i++) {
-                        var myData = new Data(i);
-                        var v = value.td[i];
-                        if (v.div) {
-                            if (v.div.length == 2) {
-                                $.each(v.div, function (ind, val) {
-                                    myData.addText(val.content);
-                                });
-                            } else {
-                                myData.addText(v.div);
-                            }
-                        } else {
-                            myData.addText(v.content);
-                        }
-                        if (v.colspan == 2) {
-                            v.colspan = 1;
-                            value.td.splice(i, 0, v);
-                        }
-                        myDay.addData(myData);
-                    }
-                    days.push(myDay);
-                }
-            });
-
-            dayLetters = dateText.substr(7,3);
-            $.each(days,function(index,value){
-                value.logData();
-                value.showData();
-            });
+            processJSON(tableResults);
         });
 }
 
@@ -285,7 +351,7 @@ function workshopGroup(){
     if(CSorSE && checkedYear == "1"){
         checkedCourse = "CC";
     }
-    loadData(checkedGroup,checkedCourse,checkedYear);
+    checkData(checkedGroup,checkedCourse,checkedYear);
 }
 
 var panel = '' +
