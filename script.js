@@ -21,7 +21,30 @@ var dayLetters;
 var days = [];
 function checkData(group,course,year){
     var subString = getSubString(group,course,year);
-    $.ajax({
+    $.post("date.php",
+        {name: subString},
+        function(dataText, status){
+            console.log("checkData(): Data: " + dataText + "\nStatus: " + status);
+            var string = "https://query.yahooapis.com/v1/public/yql?q=select%20conte" +
+                "nt%20from%20html%20where%20url%3D%22http%3A%2F%2Ffirstyearmatters.i" +
+                "nfo%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D%22%2F%2Fdiv%5Bcontain" +
+                "s(%40id%2C%20'content')%5D%2Fp%22%20limit%201&format=json&callback=";
+            var dateJSON = $.getJSON(string, function (data){
+                console.log("checkData: Success");
+                if(dataText.trim() == data.query.results.p.trim()){
+                    console.log("checkData: working"+dataText);
+                    $.post("table.php",
+                        {name: subString},
+                        function(dataJSON, status){
+                            processJSON(JSON.parse(dataJSON));
+                        });
+                }else{
+                    console.log("checkData: text file found, doesnt match mirror " + data);
+                    loadData(group,course,year,data.query.results.p);
+                }
+            });
+        });
+   /* $.ajax({
         url:'tables/'+subString+'.txt',
         dataType:'text',
         error: function()
@@ -31,30 +54,9 @@ function checkData(group,course,year){
         },
         success: function(dataText)
         {
-            var string = "https://query.yahooapis.com/v1/public/yql?q=select%20conte" +
-                "nt%20from%20html%20where%20url%3D%22http%3A%2F%2Ffirstyearmatters.i" +
-                "nfo%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D%22%2F%2Fdiv%5Bcontain" +
-                "s(%40id%2C%20'content')%5D%2Fp%22%20limit%201&format=json&callback=";
-            console.log("checkData: " + string);
-            var dateJSON = $.getJSON(string, function (data){
-                    console.log("checkData: Success");
-                    if(dataText.trim() == data.query.results.p.trim()){
-                        console.log("checkData: working"+dataText);
-                        $.ajax({
-                            url:'tables/'+subString+'.json',
-                            dataType:'json',
-                            success: function(dataJSON)
-                            {
-                                console.log("checkData: text file found, matches mirror, loaded local table sent to processor");
-                                processJSON(dataJSON);
-                            }});
-                    }else{
-                        console.log("checkData: text file found, doesnt match mirror " + data);
-                        loadData(group,course,year,dataText.trim());
-                    }
-                });
+
         }
-    });
+    });*/
 }
 
 function getSubString(g,c,y){
@@ -124,13 +126,6 @@ function processJSON(tableResults){
 
 function loadData(group,course,year,dataText){
     var subString = getSubString(group,course,year);
-    $.post("save.php",
-        {type: "text",
-            data: dataText,
-            name: subString},
-        function(data, status){
-            console.log("checkData : saving mirror text successfully " + data + "\nStatus: " + status);
-        });
     console.log("loadData(): " + subString);
     var string = "https://query.yahooapis.com" +
         "/v1/public/yql?q=select%20*%20from%20h" +
@@ -141,7 +136,7 @@ function loadData(group,course,year,dataText){
         function (data){
             var tableResults = data.query.results.tr;
             $.post("save.php",
-                {type:"table",
+                {mirror:dataText,
                     data: JSON.stringify(tableResults),
                     name: subString},
                 function(data, status){
