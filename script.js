@@ -1,7 +1,5 @@
 /**
  * Created by kyle on 06/12/16.
- * TODO: fix broken ass code
- *       -port seperate json files to DBs so it works on server!!!!!!
  */
 
 $(document).on('pageshow',function(data){
@@ -19,52 +17,61 @@ $(document).on('pageshow',function(data){
 var showIndex = 3;
 var dayLetters;
 var days = [];
-function checkData(group,course,year){
-    var subString = getSubString(group,course,year);
+function checkData(group,course,year,semester){
+    var subString = getSubString(group,course,year,semester);
     $.post("date.php",
         {name: subString},
         function(dataText, status){
             console.log("checkData(): Data: " + dataText + "\nStatus: " + status);
-            var string = "https://query.yahooapis.com/v1/public/yql?q=select%20conte" +
-                "nt%20from%20html%20where%20url%3D%22http%3A%2F%2Ffirstyearmatters.i" +
-                "nfo%2Fcs%2F" + subString + ".html%22%20and%20xpath%3D%22%2F%2Fdiv%5Bcontain" +
-                "s(%40id%2C%20'content')%5D%2Fp%22%20limit%201&format=json&callback=";
+            var string = "https://query.yahooapis.com/v1/public/yql?q=select%20content%20from" +
+                "%20html%20where%20url%3D%22http%3A%2F%2Ffirstyearmatters.info%2Fcs%2F"+ subString + ".html" +
+                "%22%20and%20xpath%3D%22%2F%2Fdiv%5Bcontains(%40id%2C%20'content')%5D%2Fp%22&format=json&callback=";
+            console.log(string);
             var dateJSON = $.getJSON(string, function (data){
                 console.log("checkData: Success");
-                if(dataText.trim() == data.query.results.p.trim()){
+                var qResults;
+                if(data.query.results.p.length == 2){
+                    qResults = data.query.results.p[0];
+                }else if(data.query.results.p.length == 3){
+                    qResults = data.query.results.p[1];
+                }
+                console.log("checkData: qResults " + qResults);
+                if(dataText.trim() == qResults.trim()){
                     console.log("checkData: working"+dataText);
                     $.post("table.php",
                         {name: subString},
                         function(dataJSON, status){
+                            //console.log("Table.php: " + dataJSON);
                             processJSON(JSON.parse(dataJSON));
                         });
                 }else{
-                    console.log("checkData: text file found, doesnt match mirror " + data);
-                    loadData(group,course,year,data.query.results.p);
+                    console.log("checkData: text file found, doesnt match mirror " + qResults + " : " +dataText);
+                    loadData(group,course,year,semester,qResults);
                 }
             });
         });
-   /* $.ajax({
-        url:'tables/'+subString+'.txt',
-        dataType:'text',
-        error: function()
-        {
-            console.log("checkData: "+"file not yet created:tables/" + subString + ".txt");
-            loadData(group,course,year,"empty");
-        },
-        success: function(dataText)
-        {
-
-        }
-    });*/
 }
 
-function getSubString(g,c,y){
+function toQueryString(obj) {
+    var parts = [];
+    for(var each in obj) if (obj.hasOwnProperty(each)) {
+        parts.push(encodeURIComponent(each) + '=' + encodeURIComponent(obj[each]));
+    }
+    return parts.join('&');
+}
+
+function getSubString(g,c,y,s){
     c += "";
     g += "";
     y += "";
+    s += "";
     var string;
-    var subString = "tt1-";
+    var subString = "tt";
+    if(s == "1") {
+        subString += "1-";
+    }else{
+        subString += "2-";
+    }
     if(c == "CS" || c == "SE" || c == "CC"){
         subString += c + y;
         if(y != "F"){
@@ -124,8 +131,8 @@ function processJSON(tableResults){
     });
 }
 
-function loadData(group,course,year,dataText){
-    var subString = getSubString(group,course,year);
+function loadData(group,course,year,semester,dataText){
+    var subString = getSubString(group,course,year,semester);
     console.log("loadData(): " + subString);
     var string = "https://query.yahooapis.com" +
         "/v1/public/yql?q=select%20*%20from%20h" +
@@ -346,7 +353,9 @@ function workshopGroup(){
     if(CSorSE && checkedYear == "1"){
         checkedCourse = "CC";
     }
-    checkData(checkedGroup,checkedCourse,checkedYear);
+
+    var checkedSemester = $("input[name=semester]:checked").val();
+    checkData(checkedGroup,checkedCourse,checkedYear,checkedSemester);
 }
 
 var panel = '' +
@@ -396,6 +405,18 @@ var panel = '' +
     '               <input type="radio" name="group" id="wg3" value="3" onchange="workshopGroup()">' +
     '               <label for="wg4">4</label>' +
     '               <input type="radio" name="group" id="wg4" value="4" onchange="workshopGroup()">' +
+    '       </fieldset>' +
+    '    </form>' +
+    '</div>' +
+    '<div id="s-collapsible" data-role="collapsible">' +
+    '   <h1>Change Semester</h1>' +
+    '   <form>' +
+    '       <fieldset id="semester" data-role="semester">' +
+    '<legend>Semester:</legend>' +
+    '               <label for="s1">1</label>' +
+    '               <input type="radio" name="group" id="s1" value="1" onchange="workshopGroup()">' +
+    '               <label for="s2">2</label>' +
+    '               <input type="radio" name="group" id="s2" value="2" onchange="workshopGroup()">' +
     '       </fieldset>' +
     '    </form>' +
     '</div>' +
