@@ -6,12 +6,14 @@ $(document).on('pageshow',function(data){
     var header = $("div[data-role='header']:visible");
     var footer = $("div[data-role='footer']:visible");
     var content = $("div[data-role='content']:visible:visible");
+    //Find elements for page being shown
     var viewport_height = $(window).height();
     var content_height = viewport_height - header.outerHeight() - footer.outerHeight();
     if((content.outerHeight() - header.outerHeight() - footer.outerHeight()) <= viewport_height) {
         content_height -= (content.outerHeight() - content.height());
     }
     $(".ui-content").height(content_height);
+    //Stretch height of main content to fit window size without overlapping header and footer
 });
 
 var showIndex = 3;
@@ -81,6 +83,8 @@ function getSubString(g,c,y,s){
         subString += c + y;
     }
     return subString;
+    //Format the year, semester course and workshop group for the url of fym eg "tt1-CC1.2" for semester 1
+    // software engineering/comp sci year 1 workshop group 2
 }
 
 function processJSON(tableResults){
@@ -90,6 +94,8 @@ function processJSON(tableResults){
         ".info%2Fcs%2Ftt1-CC1.2.html%22%20and%20xpath%" +
         "3D%22%2F%2Fdiv%5Bcontains(%40id%2C%20'date')%5D%2" +
         "2&format=json&callback=";
+    // YQL api link to retrieve date
+    //TODO: change all these links so that SQL can be entered and parsed by seperate function
     var weekJSON = $.getJSON(string,
         function (data){
             var dateText = data.query.results.div;
@@ -97,6 +103,7 @@ function processJSON(tableResults){
             dayLetters = dateText.substr(7,3);
             console.log("processJSON(): " + dateText)
         });
+    //retrieve date
 
     $.each(tableResults, function (index, value) {
         if(index>0){
@@ -124,11 +131,13 @@ function processJSON(tableResults){
             days.push(myDay);
         }
     });
+    //loop through all rows, datas, and divs withing datas, to retrieve content and create objects
 
     $.each(days,function(index,value){
         //value.logData();
         value.showData();
     });
+    // show all the data that needs to be shown for that day
 }
 
 function loadData(group,course,year,semester,dataText){
@@ -138,7 +147,7 @@ function loadData(group,course,year,semester,dataText){
         "/v1/public/yql?q=select%20*%20from%20h" +
         "tml%20where%20url%3D%22http%3A%2F%2Ffirstyea" +
         "rmatters.info%2Fcs%2F"+subString+".html%22%20" +
-        "and%20xpath%3D%22%2F%2Ftbody%2Ftr%22&format=json&callback="
+        "and%20xpath%3D%22%2F%2Ftbody%2Ftr%22&format=json&callback=";
     var weekJSON = $.getJSON(string,
         function (data){
             var tableResults = data.query.results.tr;
